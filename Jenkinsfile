@@ -7,8 +7,8 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/oussemamoussa98/projetdevops.git',
-                    credentialsId: 'git'
+                    url: 'git@github.com:oussemamoussa98/projetdevops.git',
+                    credentialsId: 'git1'
             }
         }
         stage('Build Docker Image') {
