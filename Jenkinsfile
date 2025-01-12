@@ -1,7 +1,8 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE = 'your-dockerhub-username/simple-mvc-app:latest'
+        DOCKER_IMAGE = 'oussemamoussa/simple-mvc-app:latest'
+        DOCKERHUB_CREDENTIALS = credentials ( ’ dockerhub ’)
     }
     stages {
         stage('Build Docker Image') {
