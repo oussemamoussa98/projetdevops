@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_IMAGE = 'oussemamoussa/simple-mvc-app:latest'
-        DOCKERHUB_CREDENTIALS = credentials ( ’ dockerhub ’)
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
     }
     stages {
         stage('Build Docker Image') {
@@ -20,7 +20,7 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 echo 'Pushing Docker image to Docker Hub...'
-                withDockerRegistry([credentialsId: 'docker-hub-credentials']) {
+                withDockerRegistry([credentialsId: 'DOCKERHUB_CREDENTIALS']) {
                     sh 'docker push ${DOCKER_IMAGE}'
                 }
             }
