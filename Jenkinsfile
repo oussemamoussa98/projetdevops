@@ -1,27 +1,48 @@
 pipeline {
     agent any
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
     environment {
-        DOCKER_IMAGE = 'oussemamoussa/simple-mvc-app:latest'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        DOCKER_IMAGE = 'oussemamoussa/simple-mvc-app:latest'
     }
     stages {
-        stage('Build Docker Image') {
+        stage('Checkout') {
             steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t ${DOCKER_IMAGE} .'
+                git branch: 'main',
+                    url: 'https://github.com/oussemamoussa98/projetdevops.git',
+                    credentialsId: 'git'
             }
         }
-        stage('Scan for Vulnerabilities') {
+        
+        stage('Build Client Image') {
             steps {
-                echo 'Scanning Docker image for vulnerabilities...'
-                sh 'trivy image ${DOCKER_IMAGE}'
+                dir('client') {
+                    script {
+                        dockerImageClient = docker.build("${DOCKER_IMAGE}")
+                    }
+                }
             }
         }
-        stage('Push to Docker Hub') {
+        
+        stage('Scan Client Image') {
             steps {
-                echo 'Pushing Docker image to Docker Hub...'
-                withDockerRegistry([credentialsId: 'DOCKERHUB_CREDENTIALS']) {
-                    sh 'docker push ${DOCKER_IMAGE}'
+                script {
+                    sh """
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \\
+                    aquasec/trivy:latest image --exit-code 0 --severity LOW,MEDIUM,HIGH,CRITICAL \\
+                    ${DOCKER_IMAGE}
+                    """
+                }
+            }
+        }
+        stage('Push Images to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('', "${DOCKERHUB_CREDENTIALS}") {
+                        dockerImageClient.push()
+                    }
                 }
             }
         }
